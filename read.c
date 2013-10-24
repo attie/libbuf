@@ -44,17 +44,16 @@ EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
 			p = buf->head;
 			buf->head = buf->head->next;
 			free(p);
-			continue;
+		} else {
+			tmpCount = remain >= buf->head->len ? buf->head->len : remain;
+
+			memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
+			data += tmpCount;
+
+			remain -= tmpCount;
+			buf->head->pos += tmpCount;
+			buf->head->len -= tmpCount;
 		}
-
-		tmpCount = remain >= buf->head->len ? buf->head->len : remain;
-
-		memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
-		data += tmpCount;
-
-		remain -= tmpCount;
-		buf->head->pos += tmpCount;
-		buf->head->len -= tmpCount;
 	}
 
 	pthread_mutex_unlock(&(buf->mutex));

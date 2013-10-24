@@ -23,11 +23,14 @@
 #include <stdarg.h>
 #include <errno.h>
 
+struct buf;
+typedef struct buf buf_t;
+
 EXPORT buf_t *buf_alloc(void);
 EXPORT void buf_free(buf_t *buf);
 
-EXPORT int buf_putc(buf_t *buf);
-EXPORT int buf_getc(buf_t *buf, int c);
+EXPORT int buf_putc(buf_t *buf, int c);
+EXPORT int buf_getc(buf_t *buf);
 
 EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count);
 EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count);
