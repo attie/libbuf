@@ -31,6 +31,7 @@ struct buf;
 typedef struct buf buf_t;
 
 EXPORT buf_t *buf_alloc(void);
+EXPORT void buf_clear(buf_t *buf);
 EXPORT void buf_free(buf_t *buf);
 
 EXPORT size_t buf_getSize(buf_t *buf);
