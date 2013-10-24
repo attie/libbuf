@@ -1,5 +1,3 @@
-#ifndef _BUF_H
-#define _BUF_H
 /*
   libbuf - a C library that provides fast, flexible and efficient buffers
 
@@ -19,29 +17,19 @@
   along with libbuf. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <stdio.h>
 
-#ifndef EXPORT
-#define EXPORT
-#endif
+#include "test.h"
 
-struct buf;
-typedef struct buf buf_t;
+int main(int argc, char *argv[]) {
+	int count;
+	int fails;
 
-EXPORT buf_t *buf_alloc(void);
-EXPORT void buf_free(buf_t *buf);
+	if ((fails = run_tests(&count)) != 0) {
+		printf("Failed test count: %d\n", fails);
+	} else {
+		printf("*** %d TESTS COMPLETED SUCCESSFULLY ***\n", count);
+	}
 
-EXPORT int buf_putc(buf_t *buf, int c);
-EXPORT int buf_getc(buf_t *buf);
-
-EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count);
-EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count);
-
-EXPORT int buf_printf(buf_t *buf, const char *format, ...);
-EXPORT int buf_nprintf(buf_t *buf, size_t size, const char *format, ...);
-EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap);
-EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap);
-
-#endif /* _BUF_H */
+	return 0;
+}

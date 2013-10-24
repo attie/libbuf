@@ -1,5 +1,3 @@
-#ifndef _BUF_H
-#define _BUF_H
 /*
   libbuf - a C library that provides fast, flexible and efficient buffers
 
@@ -19,29 +17,38 @@
   along with libbuf. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <stdio.h>
 
-#ifndef EXPORT
-#define EXPORT
-#endif
+#include "test.h"
 
-struct buf;
-typedef struct buf buf_t;
+struct test *tests[];
 
-EXPORT buf_t *buf_alloc(void);
-EXPORT void buf_free(buf_t *buf);
+int run_tests(int *count) {
+	int x,y;
+	int fails = 0;
+	if (count) *count = 0;
 
-EXPORT int buf_putc(buf_t *buf, int c);
-EXPORT int buf_getc(buf_t *buf);
+	for (x = 0; tests[x] != NULL; x++) {
+		for (y = 0; tests[x][y].func != NULL; y++) {
+			int ret, value;
+			printf("running '%s' registered on %s:%d...\n",
+			       tests[x][y].name, tests[x][y].file, tests[x][y].line);
+			if (count) (*count)++;
+			value = 0;
+			if ((ret = tests[x][y].func(&value)) != 0) {
+				printf("  --> *** '%s' returned %d, and passed back 0x%08X / %d  ***\n",
+				       tests[x][y].name, ret, value, value);
+				fails++;
+				return fails;
+			}
+		}
+	}
+	return fails;
+}
 
-EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count);
-EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count);
+extern struct test init_tests[];
 
-EXPORT int buf_printf(buf_t *buf, const char *format, ...);
-EXPORT int buf_nprintf(buf_t *buf, size_t size, const char *format, ...);
-EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap);
-EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap);
-
-#endif /* _BUF_H */
+struct test *tests[] = {
+	init_tests,
+	NULL
+};
