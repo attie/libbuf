@@ -33,6 +33,9 @@ typedef struct buf buf_t;
 EXPORT buf_t *buf_alloc(void);
 EXPORT void buf_free(buf_t *buf);
 
+EXPORT size_t buf_getSize(buf_t *buf);
+EXPORT size_t buf_getLength(buf_t *buf);
+
 EXPORT int buf_putc(buf_t *buf, int c);
 EXPORT int buf_getc(buf_t *buf);
 
