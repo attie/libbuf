@@ -45,10 +45,15 @@ struct buf_chunk {
 
 struct buf {
 	buf_chunk_t *head;
-	pthread_mutex_t mutex;
+	uint8_t non_blocking : 1;
+	pthread_cond_t cond;
+	pthread_mutex_t mutex; /* <-- everything is protected by this */
 };
 
-/* the mutex must be held when calling this function */
+/* these functions are not idiot proof...
+   the mutex must be held when calling these functions */
 buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen);
+int _buf_signal(buf_t *buf);
+int _buf_wait(buf_t *buf);
 
 #endif /* INTERNAL_H */

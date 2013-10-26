@@ -97,6 +97,8 @@ EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap)
 	/* c == NULL indicates an error, and errno should have been set appropriately */
 	if (!c) return -1;
 
+	_buf_signal(buf);
+
 	return ret;
 }
 

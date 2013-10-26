@@ -28,7 +28,7 @@
 int init_1(int *value) {
 	buf_t *b;
 
-	if ((b = buf_alloc()) == NULL) {
+	if ((b = buf_alloc(0)) == NULL) {
 		return 1;
 	}
 
@@ -41,7 +41,7 @@ int init_2(int *value) {
 	buf_t *b;
 	char t[10];
 
-	if ((b = buf_alloc()) == NULL) {
+	if ((b = buf_alloc(0)) == NULL) {
 		return 1;
 	}
 
@@ -66,7 +66,7 @@ int init_3(int *value) {
 	buf_t *b;
 	char t[10];
 
-	if ((b = buf_alloc()) == NULL) {
+	if ((b = buf_alloc(0)) == NULL) {
 		return 1;
 	}
 

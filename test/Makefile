@@ -3,7 +3,7 @@ BIN_ARGS:=
 
 TEST_LIB_NAME:=libbuf
 
-LIBS:=
+LIBS:=pthread
 DEBUG:=-g
 
 CFLAGS:=

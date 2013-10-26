@@ -48,5 +48,7 @@ EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count) {
 		return -1;
 	}
 
+	_buf_signal(buf);
+
 	return count;
 }

@@ -38,6 +38,16 @@ EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
 
 	pthread_mutex_lock(&(buf->mutex));
 
+	if (!buf->non_blocking) {
+		/* wait for data */
+		while (!buf->head || buf->head->len == 0) {
+			if (_buf_wait(buf) != 0) {
+				pthread_mutex_unlock(&(buf->mutex));
+				return -1;
+			}
+		}
+	}
+
 	while (buf->head != NULL && (remain > 0 || buf->head->len == 0)) {
 		if (buf->head->len <= 0) {
 			void *p;

@@ -23,7 +23,7 @@
 
 #include "internal.h"
 
-EXPORT buf_t *buf_alloc(void) {
+EXPORT buf_t *buf_alloc(int flags) {
 	buf_t *p;
 
 	if ((p = malloc(sizeof(*p))) == NULL) {
@@ -33,9 +33,19 @@ EXPORT buf_t *buf_alloc(void) {
 
 	memset(p, 0, sizeof(*p));
 
+	if (flags & BUF_NONBLOCK) {
+		p->non_blocking = 1;
+	}
+
 	if (pthread_mutex_init(&(p->mutex), NULL) != 0) {
 		free(p);
 		errno = ENOTRECOVERABLE;
+		return NULL;
+	}
+
+	if (pthread_cond_init(&(p->cond), NULL) != 0) {
+		pthread_mutex_destroy(&(p->mutex));
+		free(p);
 		return NULL;
 	}
 
@@ -64,6 +74,7 @@ EXPORT void buf_free(buf_t *buf) {
 	buf_purge(buf);
 
 	pthread_mutex_destroy(&(buf->mutex));
+	pthread_cond_destroy(&(buf->cond));
 
 	free(buf);
 }
@@ -74,7 +85,6 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 
 	if (retData) *retData = NULL;
 	if (retLen)  *retLen = NULL;
-	if (!buf) return NULL;
 	
 	/* get to the last chunk */
 	for (c = NULL, p = &(buf->head); p && *p; c = *p, p = &(*p)->next);
@@ -105,3 +115,10 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 	return c;
 }
 
+int _buf_signal(buf_t *buf) {
+	return pthread_cond_signal(&(buf->cond));
+}
+
+int _buf_wait(buf_t *buf) {
+	return pthread_cond_wait(&(buf)->cond, &(buf)->mutex);
+}

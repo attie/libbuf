@@ -47,8 +47,10 @@ int run_tests(int *count) {
 }
 
 extern struct test init_tests[];
+extern struct test threadded_tests[];
 
 struct test *tests[] = {
 	init_tests,
+	threadded_tests,
 	NULL
 };

@@ -27,10 +27,12 @@
 #define EXPORT
 #endif
 
+#define BUF_NONBLOCK 0x1
+
 struct buf;
 typedef struct buf buf_t;
 
-EXPORT buf_t *buf_alloc(void);
+EXPORT buf_t *buf_alloc(int flags);
 EXPORT void buf_purge(buf_t *buf);
 EXPORT void buf_free(buf_t *buf);
 
