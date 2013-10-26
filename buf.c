@@ -69,3 +69,31 @@ EXPORT void buf_free(buf_t *buf) {
 
 	free(buf);
 }
+
+buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen) {
+	buf_chunk_t **p;
+	buf_chunk_t *c;
+
+	if (retData) *retData = NULL;
+	if (retLen)  *retLen = NULL;
+	if (!buf) return NULL;
+	
+	/* get to the last chunk */
+	for (p = &(buf->head); p && *p; p = &(*p)->next);
+	if (!p) return NULL; /* <-- this is an error */
+
+	if ((c = malloc(sizeof(*c) + size)) == NULL) return NULL;
+
+	c->next = NULL;
+	c->size = size;
+	c->len = 0;
+	c->pos = 0;
+
+	*p = c;
+
+	if (retData) *retData = &(c->data[0]);
+	if (retLen)  *retLen  = &(c->len);
+
+	return c;
+}
+

@@ -46,4 +46,7 @@ struct buf {
 	pthread_mutex_t mutex;
 };
 
+/* the mutex must be held when calling this function */
+buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen);
+
 #endif /* INTERNAL_H */
