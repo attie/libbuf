@@ -1,3 +1,7 @@
+SYS_PREFIX?=/usr
+SYS_LIBDIR?=$(SYS_PREFIX)/lib
+SYS_HEADERDIR?=$(SYS_PREFIX)/include
+
 LIB_VERSION:=0
 LIB_FULLREV:=$(LIB_VERSION).0.1
 LIB_NAME:=buf
@@ -42,6 +46,17 @@ distclean:
 
 test: all
 	make -C test run
+
+
+install: $(SYS_LIBDIR)/lib$(LIB_NAME).so $(SYS_LIBDIR)/lib$(LIB_NAME).so.$(LIB_FULLREV).dbg $(SYS_HEADERDIR)/buf.h
+$(SYS_LIBDIR)/lib$(LIB_NAME).so: $(SYS_LIBDIR)/lib$(LIB_NAME).so.$(LIB_FULLREV)
+	ln -sf `basename $^` $@
+$(SYS_LIBDIR)/lib$(LIB_NAME).so.$(LIB_FULLREV): $(LIB_DIR)/lib$(LIB_NAME).so.$(LIB_FULLREV)
+	install -g root -o root -DT -m 755 $^ $@
+$(SYS_LIBDIR)/lib$(LIB_NAME).so.$(LIB_FULLREV).dbg: $(LIB_DIR)/lib$(LIB_NAME).so.$(LIB_FULLREV).dbg
+	install -g root -o root -DT -m 755 $^ $@
+$(SYS_HEADERDIR)/buf.h: buf.h
+	install -g root -o root -DT -m 644 $^ $@
 
 
 .%.dir:
