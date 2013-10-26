@@ -49,8 +49,9 @@ EXPORT void buf_clear(buf_t *buf) {
 
 	pthread_mutex_lock(&(buf->mutex));
 
-	for (p = buf->head; p; p = q) {
-		q = p->next;
+	while (buf->head) {
+		p = buf->head;
+		buf->head = p->next;
 		free(p);
 	}
 
