@@ -79,9 +79,19 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 	if (!buf) return NULL;
 	
 	/* get to the last chunk */
-	for (p = &(buf->head); p && *p; p = &(*p)->next);
+	for (c = NULL, p = &(buf->head); p && *p; c = *p, p = &(*p)->next);
 	if (!p) return NULL; /* <-- this is an error */
 
+	if (c) {
+		/* does this chunk have enough space to add the new data? */
+		if ((c->size - (c->pos + c->len)) >= size) {
+			if (retData) *retData = &(c->data[c->pos + c->len]);
+			if (retLen)  *retLen  = &(c->len);
+			return c;
+		}
+	}
+
+	if (size < SYS_PAGE_SIZE) size = SYS_PAGE_SIZE;
 	if ((c = malloc(sizeof(*c) + size)) == NULL) return NULL;
 
 	c->next = NULL;

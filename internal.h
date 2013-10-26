@@ -26,6 +26,8 @@
 
 #include <pthread.h>
 
+extern const size_t SYS_PAGE_SIZE;
+
 struct buf_chunk;
 typedef struct buf_chunk buf_chunk_t;
 struct buf;
