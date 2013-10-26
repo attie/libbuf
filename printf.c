@@ -47,9 +47,13 @@ EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap) {
 
 EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap) {
 	va_list ap2;
-	size_t len, len2;
-	buf_chunk_t **p;
+	size_t size2;
+
+	void *d;
+	size_t *len;
 	buf_chunk_t *c;
+
+	int ret;
 
 	if (!buf || !format) {
 		errno = EINVAL;
@@ -57,45 +61,42 @@ EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap)
 	}
 
 	va_copy(ap2, ap);
-	len = vsnprintf(NULL, 0, format, ap2);
+	size2 = vsnprintf(NULL, 0, format, ap2);
 	va_end(ap2);
 
-	if (len < 0) {
+	if (size2 < 0) {
 		errno = ENOSPC;
 		return -1;
 	}
-	if (size != -1 && size < len) len = size;
-
-	if ((c = malloc(sizeof(*c) + len)) == NULL) {
-		errno = ENOMEM;
-		return -1;
-	}
-
-	c->next = NULL;
-	c->size = len;
-	c->len = len;
-	c->pos = 0;
-
-	va_copy(ap2, ap);
-	len2 = vsnprintf((char*)c->data, len, format, ap2);
-	va_end(ap2);
-	if (len < 0 || len != len2) {
-		free(c);
-		errno = ENOSPC;
-		return -1;
-	}
+	if (size == -1 || size > size2) size = size2;
 
 	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next));
-	if (p) *p = c;
-	pthread_mutex_unlock(&(buf->mutex));
-	
-	if (!p) {
-		free(c);
-		errno = EFAULT;
-		return -1;
+
+	/* size + 1 to give space for the nul */
+	if ((c = _buf_get_space(buf, size + 1, &d, &len)) == NULL) {
+		errno = ENOMEM;
+	} else {
+		va_copy(ap2, ap);
+		ret = vsnprintf((char*)d, size, format, ap2);
+		va_end(ap2);
+
+		/* if ret != size, then either
+		     the output was truncated (bad)
+		   or 
+		     the output was shorter than before (also bad - perhaps some data changed in the meantime?) */
+		if (ret < 0 || ret != size) {
+			errno = ECANCELED;
+			c = NULL;
+		} else {
+			*len += ret;
+		}
 	}
 
-	return len;
+	pthread_mutex_unlock(&(buf->mutex));
+	
+	/* c == NULL indicates an error, and errno should have been set appropriately */
+	if (!c) return -1;
+
+	return ret;
 }
 

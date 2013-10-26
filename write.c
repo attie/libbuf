@@ -24,7 +24,8 @@
 #include "internal.h"
 
 EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count) {
-	buf_chunk_t **p;
+	void *d;
+	size_t *len;
 	buf_chunk_t *c;
 
 	if (!buf || !data) {
@@ -33,25 +34,17 @@ EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count) {
 	}
 	if (count == 0) return 0;
 
-	if ((c = malloc(sizeof(*c) + count)) == NULL) {
-		errno = ENOMEM;
-		return -1;
+	pthread_mutex_lock(&(buf->mutex));
+
+	if ((c = _buf_get_space(buf, count, &d, &len)) != NULL) {
+		memcpy(d, data, count);
+		(*len) += count;
 	}
 
-	c->next = NULL;
-	c->size = count;
-	c->len = count;
-	c->pos = 0;
-	memcpy(c->data, data, count);
-
-	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next));
-	if (p) *p = c;
 	pthread_mutex_unlock(&(buf->mutex));
 
-	if (!p) {
-		free(c);
-		errno = EFAULT;
+	if (!c) {
+		errno = ENOMEM;
 		return -1;
 	}
 
