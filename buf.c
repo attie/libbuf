@@ -59,8 +59,6 @@ EXPORT void buf_purge(buf_t *buf) {
 }
 
 EXPORT void buf_free(buf_t *buf) {
-	buf_chunk_t *p, *q;
-
 	if (!buf) return;
 
 	buf_purge(buf);
