@@ -42,7 +42,7 @@ EXPORT buf_t *buf_alloc(void) {
 	return p;
 }
 
-EXPORT void buf_clear(buf_t *buf) {
+EXPORT void buf_purge(buf_t *buf) {
 	buf_chunk_t *p, *q;
 
 	if (!buf) return;
@@ -63,7 +63,7 @@ EXPORT void buf_free(buf_t *buf) {
 
 	if (!buf) return;
 
-	buf_clear(buf);
+	buf_purge(buf);
 
 	pthread_mutex_destroy(&(buf->mutex));
 
