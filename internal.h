@@ -53,6 +53,7 @@ struct buf {
 /* these functions are not idiot proof...
    the mutex must be held when calling these functions */
 buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen);
+size_t _buf_get_data(buf_t *buf, void *data, size_t count);
 int _buf_signal(buf_t *buf);
 int _buf_wait(buf_t *buf);
 

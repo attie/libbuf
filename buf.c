@@ -115,6 +115,34 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 	return c;
 }
 
+size_t _buf_get_data(buf_t *buf, void *data, size_t count) {
+	size_t remain;
+
+	remain = count;
+
+	while (buf->head != NULL && (remain > 0 || buf->head->len == 0)) {
+		if (buf->head->len <= 0) {
+			buf_chunk_t *p;
+			p = buf->head;
+			buf->head = p->next;
+			free(p);
+		} else {
+			size_t tmpCount;
+
+			tmpCount = remain >= buf->head->len ? buf->head->len : remain;
+
+			memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
+			data += tmpCount;
+
+			remain -= tmpCount;
+			buf->head->pos += tmpCount;
+			buf->head->len -= tmpCount;
+		}
+	}
+
+	return count - remain;
+}
+
 int _buf_signal(buf_t *buf) {
 	return pthread_cond_signal(&(buf->cond));
 }

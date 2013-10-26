@@ -25,16 +25,13 @@
 
 EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
 	buf_chunk_t **p;
-	size_t remain;
-	size_t tmpCount;
+	size_t ret;
 
 	if (!buf || !data) {
 		errno = EINVAL;
 		return -1;
 	}
 	if (count == 0) return 0;
-
-	remain = count;
 
 	pthread_mutex_lock(&(buf->mutex));
 
@@ -48,26 +45,10 @@ EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
 		}
 	}
 
-	while (buf->head != NULL && (remain > 0 || buf->head->len == 0)) {
-		if (buf->head->len <= 0) {
-			void *p;
-			p = buf->head;
-			buf->head = buf->head->next;
-			free(p);
-		} else {
-			tmpCount = remain >= buf->head->len ? buf->head->len : remain;
-
-			memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
-			data += tmpCount;
-
-			remain -= tmpCount;
-			buf->head->pos += tmpCount;
-			buf->head->len -= tmpCount;
-		}
-	}
+	ret = _buf_get_data(buf, data, count);
 
 	pthread_mutex_unlock(&(buf->mutex));
 
-	return count - remain;
+	return ret;
 }
 

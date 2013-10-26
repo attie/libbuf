@@ -1,3 +1,22 @@
+/*
+  libbuf - a C library that provides fast, flexible and efficient buffers
+
+  Copyright (C) 2013 onwards  Attie Grande (attie@attie.co.uk)
+
+  libbuf is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  libbuf is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with libbuf. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,76 +24,13 @@
 #include "internal.h"
 
 EXPORT int buf_putc(buf_t *buf, int c) {
-	buf_chunk_t **p;
-	buf_chunk_t *ch;
-	size_t len;
-
-	if (!buf) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next));
-	if (p && (*p) && (*p)->size > (*p)->pos + (*p)->len) {
-		(*p)->data[(*p)->pos] = c;
-		(*p)->pos++;
-		(*p)->len++;
-		pthread_mutex_unlock(&(buf->mutex));
-		return c;
-	}
-	pthread_mutex_unlock(&(buf->mutex));
-
-	len = getpagesize();
-	if (len > 4096) len = 4096;
-	if ((ch = malloc(sizeof(*ch) + len)) == NULL) {
-		errno = ENOMEM;
-		return EOF;
-	}
-
-	ch->next = NULL;
-	ch->size = len;
-	ch->len = 1;
-	ch->pos = 0;
-	ch->data[ch->pos] = c;
-
-	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next));
-	if (p) *p = ch;
-	pthread_mutex_unlock(&(buf->mutex));
-	
-	if (!p) {
-		free(ch);
-		errno = EFAULT;
-		return -1;
-	}
-
-	return c;
+	uint8_t ch;
+	ch = c & 0xFF;
+	return buf_write(buf, &ch, 1);
 }
 
 EXPORT int buf_getc(buf_t *buf) {
-	int ret;
-
-	if (!buf) {
-		errno = EINVAL;
-		return -1;
-	}
-
-	pthread_mutex_lock(&(buf->mutex));
-	ret = EOF;
-	while (buf->head && (ret == EOF || buf->head->len == 0)) {
-		if (buf->head->len == 0) {
-			buf_chunk_t *c;
-			c = buf->head;
-			buf->head = c->next;
-			free(c);
-		} else {
-			ret = buf->head->data[buf->head->pos];
-			buf->head->pos++;
-			buf->head->len--;
-		}
-	}
-	pthread_mutex_unlock(&(buf->mutex));
-
-	return ret;
+	uint8_t c;
+	if (buf_read(buf, &c, 1) == -1) return EOF;
+	return c;
 }
