@@ -26,7 +26,8 @@
 EXPORT int buf_putc(buf_t *buf, int c) {
 	uint8_t ch;
 	ch = c & 0xFF;
-	return buf_write(buf, &ch, 1);
+	if (buf_write(buf, &ch, 1) != 1) return EOF;
+	return ch;
 }
 
 EXPORT int buf_getc(buf_t *buf) {
