@@ -32,6 +32,6 @@ EXPORT int buf_putc(buf_t *buf, int c) {
 
 EXPORT int buf_getc(buf_t *buf) {
 	uint8_t c;
-	if (buf_read(buf, &c, 1) == -1) return EOF;
+	if (buf_read(buf, &c, 1) != 1) return EOF;
 	return c;
 }
