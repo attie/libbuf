@@ -82,6 +82,7 @@ EXPORT void buf_free(buf_t *buf) {
 buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen) {
 	buf_chunk_t **p;
 	buf_chunk_t *c;
+	size_t msize;
 
 	if (retData) *retData = NULL;
 	if (retLen)  *retLen = NULL;
@@ -99,8 +100,12 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 		}
 	}
 
-	if (size < SYS_PAGE_SIZE) size = SYS_PAGE_SIZE;
-	if ((c = malloc(sizeof(*c) + size)) == NULL) return NULL;
+	msize = sizeof(*c) + size;
+	if (msize < SYS_PAGE_SIZE) {
+		size += SYS_PAGE_SIZE - msize;
+		msize = SYS_PAGE_SIZE;
+	}
+	if ((c = malloc(msize)) == NULL) return NULL;
 
 	c->next = NULL;
 	c->size = size;
