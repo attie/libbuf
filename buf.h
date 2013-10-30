@@ -28,6 +28,7 @@
 #endif
 
 #define BUF_NONBLOCK 0x1
+#define BUF_GIFT     0x2
 
 struct buf;
 typedef struct buf buf_t;
@@ -49,5 +50,7 @@ EXPORT int buf_printf(buf_t *buf, const char *format, ...);
 EXPORT int buf_nprintf(buf_t *buf, size_t size, const char *format, ...);
 EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap);
 EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap);
+
+EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags);
 
 #endif /* _BUF_H */

@@ -155,3 +155,47 @@ int _buf_signal(buf_t *buf) {
 int _buf_wait(buf_t *buf) {
 	return pthread_cond_wait(&(buf)->cond, &(buf)->mutex);
 }
+
+EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags) {
+	buf_chunk_t **p;
+	size_t count;
+
+	if (!dest || !src) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	pthread_mutex_lock(&(dest->mutex));
+	pthread_mutex_lock(&(src->mutex));
+
+	/* find out how many bytes we are taking from src */
+	count = 0;
+	for (p = &(src->head); p && *p; p = &((*p)->next)) {
+		count += (*p)->len;
+	}
+
+	if (count == 0) goto die;
+
+	/* find the end of dest */
+	for (p = &(dest->head); p && *p; p = &((*p)->next));
+	if (!p) {
+		errno = EINVAL;
+		count = -1;
+		goto die;
+	}
+
+	*p = src->head;
+	src->head = NULL;
+
+	_buf_signal(dest);
+
+die:
+	pthread_mutex_unlock(&(dest->mutex));
+	pthread_mutex_unlock(&(src->mutex));
+
+	if (flags & BUF_GIFT) {
+		buf_free(src);
+	}
+
+	return count;
+}
