@@ -24,7 +24,6 @@
 #include "internal.h"
 
 EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags) {
-	buf_chunk_t **p;
 	size_t count;
 
 	if (!dest || !src) {
@@ -36,23 +35,20 @@ EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags) {
 	pthread_mutex_lock(&(src->mutex));
 
 	/* find out how many bytes we are taking from src */
-	count = 0;
-	for (p = &(src->head); p && *p; p = &((*p)->next)) {
-		count += (*p)->len;
+	if (src->head == NULL || (count = _buf_getLength(src)) == 0) goto die;
+
+	/* link up the chains */
+	if (dest->tail != NULL) {
+		src->head->prev = dest->tail;
+		dest->tail->next = src->head;
+		dest->tail = src->tail;
+	} else {
+		dest->head = src->head;
+		dest->tail = src->tail;
 	}
 
-	if (count == 0) goto die;
-
-	/* find the end of dest */
-	for (p = &(dest->head); p && *p; p = &((*p)->next));
-	if (!p) {
-		errno = EINVAL;
-		count = -1;
-		goto die;
-	}
-
-	*p = src->head;
 	src->head = NULL;
+	src->tail = NULL;
 
 	if (!(flags & BUF_MORE)) {
 		_buf_signal(dest);

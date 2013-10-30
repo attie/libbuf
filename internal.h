@@ -37,6 +37,7 @@ typedef struct buf buf_t;
 
 struct buf_chunk {
 	struct buf_chunk *next;
+	struct buf_chunk *prev;
 	size_t size; /* <-- size of the data element */
 	size_t len;  /* <-- length of the populated data */
 	size_t pos;  /* <-- offset to beginning of the populated data */
@@ -45,6 +46,7 @@ struct buf_chunk {
 
 struct buf {
 	buf_chunk_t *head;
+	buf_chunk_t *tail;
 	pthread_cond_t cond;
 	pthread_mutex_t mutex; /* <-- everything is protected by this */
 };
@@ -55,5 +57,7 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 size_t _buf_get_data(buf_t *buf, void *data, size_t count);
 int _buf_signal(buf_t *buf);
 int _buf_wait(buf_t *buf);
+size_t _buf_getSize(buf_t *buf);
+size_t _buf_getLength(buf_t *buf);
 
 #endif /* INTERNAL_H */

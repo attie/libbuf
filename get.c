@@ -24,7 +24,6 @@
 #include "internal.h"
 
 EXPORT size_t buf_getSize(buf_t *buf) {
-	buf_chunk_t **p;
 	size_t c;
 
 	if (!buf) {
@@ -32,18 +31,14 @@ EXPORT size_t buf_getSize(buf_t *buf) {
 		return -1;
 	}
 
-	c = 0;
 	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next)) {
-		c += (*p)->size;
-	}
+	c = _buf_getSize(buf);
 	pthread_mutex_unlock(&(buf->mutex));
 
 	return c;
 }
 
 EXPORT size_t buf_getLength(buf_t *buf) {
-	buf_chunk_t **p;
 	size_t c;
 
 	if (!buf) {
@@ -51,11 +46,8 @@ EXPORT size_t buf_getLength(buf_t *buf) {
 		return -1;
 	}
 
-	c = 0;
 	pthread_mutex_lock(&(buf->mutex));
-	for (p = &(buf->head); p && *p; p = &((*p)->next)) {
-		c += (*p)->len;
-	}
+	c = _buf_getLength(buf);
 	pthread_mutex_unlock(&(buf->mutex));
 
 	return c;
