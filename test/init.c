@@ -93,9 +93,46 @@ int init_3(int *value) {
 	return 0;
 }
 
+int init_4(int *value) {
+	buf_t *a, *b;
+	char t[10];
+
+	if ((a = buf_alloc()) == NULL) {
+		return 1;
+	}
+	if ((b = buf_alloc()) == NULL) {
+		buf_free(a);
+		return 2;
+	}
+
+	if (buf_write(a, 0, "Hi ", 3) != 3) {
+		return 3;
+	}
+	if (buf_write(b, 0, "You", 3) != 3) {
+		return 4;
+	}
+
+	if (buf_splice(a, b, BUF_GIFT) != 3) {
+		return 5;
+	}
+
+	if (buf_read(a, 0, t, sizeof(t)) != 6) {
+		return 6;
+	}
+
+	if (strncmp(t, "Hi You", 6)) {
+		return 7;
+	}
+
+	buf_free(a);
+
+	return 0;
+}
+
 struct test init_tests[] = {
 	ADD_FUNC(init_1),
 	ADD_FUNC(init_2),
 	ADD_FUNC(init_3),
+	ADD_FUNC(init_4),
 	END_FUNCS(),
 };
