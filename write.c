@@ -23,7 +23,7 @@
 
 #include "internal.h"
 
-EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count) {
+EXPORT size_t buf_write(buf_t *buf, int flags, const uint8_t *data, size_t count) {
 	void *d;
 	size_t *len;
 	buf_chunk_t *c;
@@ -48,7 +48,7 @@ EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count) {
 		return -1;
 	}
 
-	_buf_signal(buf);
+	if (!(flags & BUF_MORE)) _buf_signal(buf);
 
 	return count;
 }

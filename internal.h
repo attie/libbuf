@@ -45,7 +45,6 @@ struct buf_chunk {
 
 struct buf {
 	buf_chunk_t *head;
-	uint8_t non_blocking : 1;
 	pthread_cond_t cond;
 	pthread_mutex_t mutex; /* <-- everything is protected by this */
 };

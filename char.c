@@ -23,15 +23,15 @@
 
 #include "internal.h"
 
-EXPORT int buf_putc(buf_t *buf, int c) {
+EXPORT int buf_putc(buf_t *buf, int flags, int c) {
 	uint8_t ch;
 	ch = c & 0xFF;
-	if (buf_write(buf, &ch, 1) != 1) return EOF;
+	if (buf_write(buf, flags, &ch, 1) != 1) return EOF;
 	return ch;
 }
 
-EXPORT int buf_getc(buf_t *buf) {
+EXPORT int buf_getc(buf_t *buf, int flags) {
 	uint8_t c;
-	if (buf_read(buf, &c, 1) != 1) return EOF;
+	if (buf_read(buf, flags, &c, 1) != 1) return EOF;
 	return c;
 }

@@ -35,7 +35,7 @@ void *threadded_1B(void *v) {
 
 	fprintf(stderr, "B: writing\n");
 
-	buf_write(b, "Hello", 5);
+	buf_write(b, 0, "Hello", 5);
 
 	fprintf(stderr, "B: written, ending\n");
 
@@ -48,7 +48,7 @@ int threadded_1(int *value) {
 	size_t len;
 	char buf[10];
 
-	if ((b = buf_alloc(0)) == NULL) {
+	if ((b = buf_alloc()) == NULL) {
 		return 1;
 	}
 
@@ -58,7 +58,7 @@ int threadded_1(int *value) {
 
 	fprintf(stderr, "A: read()\n");
 
-	len = buf_read(b, buf, sizeof(buf));
+	len = buf_read(b, 0, buf, sizeof(buf));
 
 	fprintf(stderr, "A: read() complete: %d bytes\n", len);
 	fprintf(stderr, "A: read: >%.*s<\n", len, buf);
@@ -81,7 +81,7 @@ void *threadded_2B(void *v) {
 
 	fprintf(stderr, "B: writing\n");
 
-	buf_write(b, "Hello", 5);
+	buf_write(b, 0, "Hello", 5);
 
 	fprintf(stderr, "B: written, ending\n");
 
@@ -94,7 +94,7 @@ int threadded_2(int *value) {
 	size_t len;
 	char buf[10];
 
-	if ((b = buf_alloc(BUF_NONBLOCK)) == NULL) {
+	if ((b = buf_alloc()) == NULL) {
 		return 1;
 	}
 
@@ -104,7 +104,7 @@ int threadded_2(int *value) {
 
 	fprintf(stderr, "A: read()\n");
 
-	len = buf_read(b, buf, sizeof(buf));
+	len = buf_read(b, BUF_NONBLOCK, buf, sizeof(buf));
 
 	fprintf(stderr, "A: read() complete: %d bytes\n", len);
 	fprintf(stderr, "A: read: >%.*s<\n", len, buf);

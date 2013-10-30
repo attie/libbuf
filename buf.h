@@ -28,28 +28,29 @@
 #endif
 
 #define BUF_NONBLOCK 0x1
-#define BUF_GIFT     0x2
+#define BUF_MORE     0x2
+#define BUF_GIFT     0x4
 
 struct buf;
 typedef struct buf buf_t;
 
-EXPORT buf_t *buf_alloc(int flags);
+EXPORT buf_t *buf_alloc(void);
 EXPORT void buf_purge(buf_t *buf);
 EXPORT void buf_free(buf_t *buf);
 
 EXPORT size_t buf_getSize(buf_t *buf);
 EXPORT size_t buf_getLength(buf_t *buf);
 
-EXPORT int buf_putc(buf_t *buf, int c);
-EXPORT int buf_getc(buf_t *buf);
+EXPORT int buf_putc(buf_t *buf, int flags, int c);
+EXPORT int buf_getc(buf_t *buf, int flags);
 
-EXPORT size_t buf_write(buf_t *buf, const uint8_t *data, size_t count);
-EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count);
+EXPORT size_t buf_write(buf_t *buf, int flags, const uint8_t *data, size_t count);
+EXPORT size_t buf_read(buf_t *buf, int flags, uint8_t *data, size_t count);
 
-EXPORT int buf_printf(buf_t *buf, const char *format, ...);
-EXPORT int buf_nprintf(buf_t *buf, size_t size, const char *format, ...);
-EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap);
-EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap);
+EXPORT int buf_printf(buf_t *buf, int flags, const char *format, ...);
+EXPORT int buf_nprintf(buf_t *buf, int flags, size_t size, const char *format, ...);
+EXPORT int buf_vprintf(buf_t *buf, int flags, const char *format, va_list ap);
+EXPORT int buf_vnprintf(buf_t *buf, int flags, size_t size, const char *format, va_list ap);
 
 EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags);
 

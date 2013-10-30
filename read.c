@@ -23,7 +23,7 @@
 
 #include "internal.h"
 
-EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
+EXPORT size_t buf_read(buf_t *buf, int flags, uint8_t *data, size_t count) {
 	buf_chunk_t **p;
 	size_t ret;
 
@@ -35,7 +35,7 @@ EXPORT size_t buf_read(buf_t *buf, uint8_t *data, size_t count) {
 
 	pthread_mutex_lock(&(buf->mutex));
 
-	if (!buf->non_blocking) {
+	if (!(flags & BUF_NONBLOCK)) {
 		/* wait for data */
 		while (!buf->head || buf->head->len == 0) {
 			if (_buf_wait(buf) != 0) {

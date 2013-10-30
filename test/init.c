@@ -28,7 +28,7 @@
 int init_1(int *value) {
 	buf_t *b;
 
-	if ((b = buf_alloc(0)) == NULL) {
+	if ((b = buf_alloc()) == NULL) {
 		return 1;
 	}
 
@@ -41,15 +41,15 @@ int init_2(int *value) {
 	buf_t *b;
 	char t[10];
 
-	if ((b = buf_alloc(0)) == NULL) {
+	if ((b = buf_alloc()) == NULL) {
 		return 1;
 	}
 
-	if (buf_write(b, "Hello", 5) != 5) {
+	if (buf_write(b, 0, "Hello", 5) != 5) {
 		return 2;
 	}
 
-	if (buf_read(b, t, sizeof(t)) != 5) {
+	if (buf_read(b, 0, t, sizeof(t)) != 5) {
 		return 3;
 	}
 
@@ -66,21 +66,21 @@ int init_3(int *value) {
 	buf_t *b;
 	char t[10];
 
-	if ((b = buf_alloc(0)) == NULL) {
+	if ((b = buf_alloc()) == NULL) {
 		return 1;
 	}
 
-	if (buf_write(b, "Hi", 2) != 2) {
+	if (buf_write(b, 0, "Hi", 2) != 2) {
 		return 2;
 	}
-	if (buf_write(b, " ", 1) != 1) {
+	if (buf_write(b, 0, " ", 1) != 1) {
 		return 3;
 	}
-	if (buf_write(b, "You", 3) != 3) {
+	if (buf_write(b, 0, "You", 3) != 3) {
 		return 4;
 	}
 
-	if (buf_read(b, t, sizeof(t)) != 6) {
+	if (buf_read(b, 0, t, sizeof(t)) != 6) {
 		return 5;
 	}
 

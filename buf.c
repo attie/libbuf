@@ -23,7 +23,7 @@
 
 #include "internal.h"
 
-EXPORT buf_t *buf_alloc(int flags) {
+EXPORT buf_t *buf_alloc(void) {
 	buf_t *p;
 
 	if ((p = malloc(sizeof(*p))) == NULL) {
@@ -32,10 +32,6 @@ EXPORT buf_t *buf_alloc(int flags) {
 	}
 
 	memset(p, 0, sizeof(*p));
-
-	if (flags & BUF_NONBLOCK) {
-		p->non_blocking = 1;
-	}
 
 	if (pthread_mutex_init(&(p->mutex), NULL) != 0) {
 		free(p);
@@ -187,7 +183,9 @@ EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags) {
 	*p = src->head;
 	src->head = NULL;
 
-	_buf_signal(dest);
+	if (!(flags & BUF_MORE)) {
+		_buf_signal(dest);
+	}
 
 die:
 	pthread_mutex_unlock(&(dest->mutex));

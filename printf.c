@@ -23,29 +23,29 @@
 
 #include "internal.h"
 
-EXPORT int buf_printf(buf_t *buf, const char *format, ...) {
+EXPORT int buf_printf(buf_t *buf, int flags, const char *format, ...) {
 	va_list ap;
 	int ret;
 	va_start(ap, format);
-	ret = buf_vnprintf(buf, -1, format, ap);
+	ret = buf_vnprintf(buf, flags, -1, format, ap);
 	va_end(ap);
 	return ret;
 }
 
-EXPORT int buf_nprintf(buf_t *buf, size_t size, const char *format, ...) {
+EXPORT int buf_nprintf(buf_t *buf, int flags, size_t size, const char *format, ...) {
 	va_list ap;
 	int ret;
 	va_start(ap, format);
-	ret = buf_vnprintf(buf, size, format, ap);
+	ret = buf_vnprintf(buf, flags, size, format, ap);
 	va_end(ap);
 	return ret;
 }
 
-EXPORT int buf_vprintf(buf_t *buf, const char *format, va_list ap) {
-	return buf_vnprintf(buf, -1, format, ap);
+EXPORT int buf_vprintf(buf_t *buf, int flags, const char *format, va_list ap) {
+	return buf_vnprintf(buf, flags, -1, format, ap);
 }
 
-EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap) {
+EXPORT int buf_vnprintf(buf_t *buf, int flags, size_t size, const char *format, va_list ap) {
 	va_list ap2;
 	size_t size2;
 
@@ -97,7 +97,7 @@ EXPORT int buf_vnprintf(buf_t *buf, size_t size, const char *format, va_list ap)
 	/* c == NULL indicates an error, and errno should have been set appropriately */
 	if (!c) return -1;
 
-	_buf_signal(buf);
+	if (!(flags & BUF_MORE)) _buf_signal(buf);
 
 	return ret;
 }
