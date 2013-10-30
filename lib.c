@@ -19,7 +19,7 @@
 
 #include <unistd.h>
 
-size_t SYS_PAGE_SIZE = -1;
+size_t SYS_PAGE_SIZE = 16; /* a small value, just incase the constructor isn't called... */
 
 __attribute__((constructor)) void __lib_init(void) {
 	SYS_PAGE_SIZE = getpagesize();
