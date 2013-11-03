@@ -93,8 +93,10 @@ size_t _buf_get_data(buf_t *buf, void *data, size_t count) {
 
 			tmpCount = remain >= buf->head->len ? buf->head->len : remain;
 
-			memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
-			data += tmpCount;
+			if (data) {
+				memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
+				data += tmpCount;
+			}
 
 			remain -= tmpCount;
 			buf->head->pos += tmpCount;

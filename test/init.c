@@ -129,10 +129,41 @@ int init_4(int *value) {
 	return 0;
 }
 
+int init_5(int *value) {
+	buf_t *b;
+	char t[10];
+
+	if ((b = buf_alloc()) == NULL) {
+		return 1;
+	}
+
+	if (buf_write(b, 0, "HelloPeople", 11) != 11) {
+		return 2;
+	}
+
+	if (buf_skip(b, 5) != 5) {
+		return 3;
+	}
+
+	if (buf_read(b, 0, t, sizeof(t)) != 6) {
+		return 4;
+	}
+
+	if (strncmp(t, "People", 6)) {
+		return 5;
+	}
+
+	buf_free(b);
+
+	return 0;
+}
+
+
 struct test init_tests[] = {
 	ADD_FUNC(init_1),
 	ADD_FUNC(init_2),
 	ADD_FUNC(init_3),
 	ADD_FUNC(init_4),
+	ADD_FUNC(init_5),
 	END_FUNCS(),
 };

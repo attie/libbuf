@@ -53,5 +53,6 @@ EXPORT int buf_vprintf(buf_t *buf, int flags, const char *format, va_list ap);
 EXPORT int buf_vnprintf(buf_t *buf, int flags, size_t size, const char *format, va_list ap);
 
 EXPORT size_t buf_splice(buf_t *dest, buf_t *src, int flags);
+EXPORT size_t buf_skip(buf_t *buf, size_t count);
 
 #endif /* _BUF_H */
