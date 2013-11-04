@@ -23,22 +23,50 @@
 
 #include "internal.h"
 
-EXPORT size_t buf_skip(buf_t *buf, size_t count) {
+EXPORT size_t buf_takeStart(buf_t *buf, int flags, uint8_t **data, size_t count) {
+	buf_chunk_t **p;
 	size_t ret;
 
-	if (!buf) {
+	if (!buf || !data) {
 		errno = EINVAL;
 		return -1;
 	}
-
 	if (count == 0) return 0;
 
 	pthread_mutex_lock(&(buf->mutex));
 
-	ret = _buf_get_data(buf, NULL, NULL, count);
+	if (!(flags & BUF_NONBLOCK)) {
+		/* wait for data */
+		while (!buf->head || buf->head->len == 0) {
+			if (_buf_wait(buf) != 0) {
+				pthread_mutex_unlock(&(buf->mutex));
+				return -1;
+			}
+		}
+	}
+
+	ret = _buf_get_data(buf, NULL, data, count);
 
 	pthread_mutex_unlock(&(buf->mutex));
 
 	return ret;
 }
 
+EXPORT size_t buf_takeFinish(buf_t *buf, size_t count) {
+	buf_chunk_t **p;
+	size_t ret;
+
+	if (!buf) {
+		errno = EINVAL;
+		return -1;
+	}
+	if (count == 0) return 0;
+
+	pthread_mutex_lock(&(buf->mutex));
+
+	ret = _buf_takeFinish(buf, count);
+
+	pthread_mutex_unlock(&(buf->mutex));
+
+	return ret;
+}

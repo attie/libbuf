@@ -45,7 +45,7 @@ EXPORT size_t buf_read(buf_t *buf, int flags, uint8_t *data, size_t count) {
 		}
 	}
 
-	ret = _buf_get_data(buf, data, count);
+	ret = _buf_get_data(buf, data, NULL, count);
 
 	pthread_mutex_unlock(&(buf->mutex));
 

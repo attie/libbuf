@@ -47,6 +47,9 @@ EXPORT int buf_getc(buf_t *buf, int flags);
 EXPORT size_t buf_write(buf_t *buf, int flags, const uint8_t *data, size_t count);
 EXPORT size_t buf_read(buf_t *buf, int flags, uint8_t *data, size_t count);
 
+EXPORT size_t buf_takeStart(buf_t *buf, int flags, uint8_t **data, size_t count);
+EXPORT size_t buf_takeFinish(buf_t *buf, size_t count);
+
 EXPORT int buf_printf(buf_t *buf, int flags, const char *format, ...);
 EXPORT int buf_nprintf(buf_t *buf, int flags, size_t size, const char *format, ...);
 EXPORT int buf_vprintf(buf_t *buf, int flags, const char *format, va_list ap);

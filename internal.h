@@ -40,6 +40,7 @@ struct buf_chunk {
 	struct buf_chunk *prev;
 	size_t size; /* <-- size of the data element */
 	size_t len;  /* <-- length of the populated data */
+	size_t keepPos; /* <-- position that might still be in use - see buf_takeStart() */
 	size_t pos;  /* <-- offset to beginning of the populated data */
 	uint8_t data[0];
 };
@@ -47,6 +48,8 @@ struct buf_chunk {
 struct buf {
 	buf_chunk_t *head;
 	buf_chunk_t *tail;
+	buf_chunk_t *keep_head;
+	buf_chunk_t *keep_tail;
 	pthread_cond_t cond;
 	pthread_mutex_t mutex; /* <-- everything is protected by this */
 };
@@ -54,7 +57,8 @@ struct buf {
 /* these functions are not idiot proof...
    the mutex must be held when calling these functions */
 buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **retLen);
-size_t _buf_get_data(buf_t *buf, void *data, size_t count);
+size_t _buf_get_data(buf_t *buf, uint8_t *data1, uint8_t **data2, size_t count);
+size_t _buf_takeFinish(buf_t *buf, size_t count);
 int _buf_signal(buf_t *buf);
 int _buf_wait(buf_t *buf);
 size_t _buf_getSize(buf_t *buf);

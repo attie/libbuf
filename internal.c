@@ -73,36 +73,100 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 	return t;
 }
 
-size_t _buf_get_data(buf_t *buf, void *data, size_t count) {
+/* use data1 to copy data to the given memory
+   use data2 to get the address of the _ACTUAL_ memory
+     - must be followed by a call to _buf_takeFinish()
+*/
+size_t _buf_get_data(buf_t *buf, uint8_t *data1, uint8_t **data2, size_t count) {
 	size_t remain;
 
 	remain = count;
 
 	while (buf->head != NULL && (remain > 0 || buf->head->len == 0)) {
 		if (buf->head->len == 0) {
-			buf_chunk_t *p = buf->head;
-			buf->head = p->next;
-			if (buf->head) {
-				buf->head->prev = NULL;
-			} else if (buf->tail == p) {
-				buf->tail = NULL;
+			if (buf->head->pos != buf->head->keepPos) {
+				if (buf->keep_tail == NULL) {
+					buf->keep_head = buf->head;
+					buf->keep_tail = buf->head;
+				} else {
+					buf->keep_tail->next = buf->head;
+					buf->keep_tail->next->prev = buf->keep_tail;
+					buf->keep_tail = buf->keep_tail->next;
+				}
+				buf->keep_tail->next = NULL;
+
+				buf->head = buf->head->next;
+				if (buf->head) {
+					buf->head->prev = NULL;
+				}
+			} else {
+				buf_chunk_t *p = buf->head;
+				buf->head = p->next;
+				if (buf->head) {
+					buf->head->prev = NULL;
+				} else if (buf->tail == p) {
+					buf->tail = NULL;
+				}
+				free(p);
 			}
-			free(p);
 		} else {
 			size_t tmpCount;
 
 			tmpCount = remain >= buf->head->len ? buf->head->len : remain;
 
-			if (data) {
-				memcpy(data, &(buf->head->data[buf->head->pos]), tmpCount);
-				data += tmpCount;
+			if (data1) {
+				memcpy(data1, &(buf->head->data[buf->head->pos]), tmpCount);
+				data1 += tmpCount;
+				if (buf->head->pos == buf->head->keepPos) {
+					buf->head->keepPos += tmpCount;
+				}
+			}
+			if (data2) {
+				*data2 = &(buf->head->data[buf->head->pos]);
 			}
 
-			remain -= tmpCount;
 			buf->head->pos += tmpCount;
 			buf->head->len -= tmpCount;
+			remain -= tmpCount;
+
+			if (data2) {
+				return tmpCount;
+			}
 		}
 	}
+
+	return count - remain;
+}
+
+static void __buf_takeFinish(buf_t *buf, size_t *remain, buf_chunk_t **head, buf_chunk_t **tail) {
+	while (*head != NULL && (*remain > 0 || ((*head)->len == 0 && (*head)->pos == (*head)->keepPos))) {
+		if ((*head)->len == 0 && (*head)->pos == (*head)->keepPos) {
+			buf_chunk_t *p = *head;
+			*head = p->next;
+			if (*head) {
+				(*head)->prev = NULL;
+			} else if (*tail == p) {
+				*tail = NULL;
+			}
+			free(p);
+		} else {
+			size_t tmpCount;
+
+			tmpCount = (*head)->pos - (*head)->keepPos;
+			tmpCount = *remain >= tmpCount ? tmpCount : *remain;
+
+			(*head)->keepPos += tmpCount;
+			*remain -= tmpCount;
+		}
+	}
+}
+size_t _buf_takeFinish(buf_t *buf, size_t count) {
+	size_t remain;
+
+	remain = count;
+
+	__buf_takeFinish(buf, &remain, &buf->keep_head, &buf->keep_tail);
+	__buf_takeFinish(buf, &remain, &buf->head,      &buf->tail);
 
 	return count - remain;
 }
@@ -120,6 +184,9 @@ size_t _buf_getSize(buf_t *buf) {
 	size_t c;
 
 	c = 0;
+	for (p = &(buf->keep_head); p && *p; p = &((*p)->next)) {
+		c += (*p)->size;
+	}
 	for (p = &(buf->head); p && *p; p = &((*p)->next)) {
 		c += (*p)->size;
 	}
