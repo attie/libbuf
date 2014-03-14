@@ -43,7 +43,7 @@ buf_chunk_t *_buf_get_space(buf_t *buf, size_t size, void **retData, size_t **re
 		/* as we are moving onto a new chunk, we can make this one smaller
 		   we also don't care if this fails...
 		*/
-		if ((c = realloc(c, c->pos + c->len)) != NULL) {
+		if ((c = realloc(c, sizeof(*c) + c->pos + c->len)) != NULL) {
 			c->size = c->pos + c->len;
 			if (buf->head == buf->tail) buf->head = c;
 			if (c->prev) c->prev->next = c;
